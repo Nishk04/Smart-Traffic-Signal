@@ -1,5 +1,27 @@
 from enum import Enum
 import time
+import RPi.GPIO as GPIO
+import atexit
+
+# Setup GPIO Pins
+SIGNAL_1 = {'RED': 2, 'YELLOW': 3, 'GREEN': 4}
+SIGNAL_2 = {'RED': 14, 'YELLOW': 15, 'GREEN': 18}
+SIGNAL_3 = {'RED': 17, 'YELLOW': 22, 'GREEN': 22}
+SIGNAL_4 = {'RED': 10, 'YELLOW': 9, 'GREEN': 11}
+PEDESTRIAN_BUZZER = 10
+PEDESTRIAN_BUTTON = 11
+
+ALL_SIGNALS = [SIGNAL_1, SIGNAL_2, SIGNAL_3, SIGNAL_4]
+
+GPIO.setmode(GPIO.BCM)
+
+# Setup pins for lights and buzzer
+for signal in ALL_SIGNALS:
+    GPIO.setup(list(signal.values()), GPIO.OUT) # Setup all pins in the signal group
+GPIO.setup(PEDESTRIAN_BUZZER, GPIO.OUT)
+GPIO.setup(PEDESTRIAN_BUTTON, GPIO.IN)
+
+#########################################################################################################
 
 class TrafficState(Enum):
     RED = 1
@@ -12,11 +34,14 @@ class TrafficSignal:
         self.state = TrafficState.RED
         self.green_time = 10  # Default green light duration
         self.pedestrian_request = False
+        self.current_signal = ALL_SIGNALS[0]  # Active signal group
 
     def activate_pedestrian_request(self):
-        self.pedestrian_request = True
+        if(GPIO.input(PEDESTRIAN_BUTTON)):
+            self.pedestrian_request = True
 
     #TO-DO: Implement a method to detect the number of cars waiting at the intersection
+    # Controls which state to go to next
     def transition(self, cars=0):
         if self.state == TrafficState.RED:
             if self.pedestrian_request:
@@ -31,10 +56,16 @@ class TrafficSignal:
         elif self.state == TrafficState.PEDESTRIAN:
             self.state = TrafficState.RED
             self.pedestrian_request = False  # Reset pedestrian request
-
+        #To-Do: Method to go to next signal in the list + figure out which phase to use for the intersection
+        self.current_signal = self.get_next_signal(self.current_signal) # Go to next signal 
+    
+    def get_next_signal(self, cur_signal):
+        cur_index = ALL_SIGNALS.index(cur_signal)
+        return ALL_SIGNALS[cur_index+1]
+    
     def calculate_green_time(self, cars):
         # Linear Regression: 
-        return 2 * cars + 5
+        return 2 * cars + 7
 
     def run(self, cycles=5):
         for _ in range(cycles):
@@ -56,12 +87,31 @@ class TrafficSignal:
             self.transition()
 
     def control_lights(self, current_light):
-        # Raspberry Pi GPIO integration goes here
-        print(f"Turning on {current_light} light.")
+        # Turn off all lights in the current signal first
+        GPIO.output(list(self.current_signal.values()), GPIO.LOW)
+        GPIO.output(PEDESTRIAN_BUZZER, GPIO.LOW)  # Turn off buzzer
 
-# Example usage
+        # Turn on appropriate light by getting specific pin from the current signal
+        if current_light == "RED":
+            GPIO.output(self.current_signal['RED'], GPIO.HIGH)
+        elif current_light == "YELLOW":
+            GPIO.output(self.current_signal['YELLOW'], GPIO.HIGH)
+        elif current_light == "GREEN":
+            GPIO.output(self.current_signal['GREEN'], GPIO.HIGH)
+        elif current_light == "PEDESTRIAN":
+            GPIO.output(PEDESTRIAN_BUZZER, GPIO.HIGH)  # Activate buzzer
+
+#########################################################################################################
+
+# GPIO Cleanup Logic when the program exits
+@atexit.register
+def cleanup_gpio():
+    #Turn off all lights and buzzer
+    GPIO.output([pin for signal in ALL_SIGNALS for pin in signal.values()], GPIO.LOW)
+    GPIO.output(PEDESTRIAN_BUZZER, GPIO.LOW)
+    GPIO.cleanup()
+
+# Run the program here
 signal = TrafficSignal()
-
-# Simulate pedestrian request during the cycle
-signal.activate_pedestrian_request()
 signal.run()
+
