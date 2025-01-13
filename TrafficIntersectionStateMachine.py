@@ -2,6 +2,7 @@ from enum import Enum
 import time
 import RPi.GPIO as GPIO
 import atexit
+import DetectCarsRaspPi as dc
 
 # Setup GPIO Pins
 SIGNAL_1 = {'RED': 2, 'YELLOW': 3, 'GREEN': 4}
@@ -23,6 +24,7 @@ for signal in PHASE_1 and PHASE_2:
 GPIO.setup(PEDESTRIAN_BUZZER, GPIO.OUT)
 GPIO.setup(PEDESTRIAN_BUTTON, GPIO.IN)
 
+detections = dc.get_detections()
 #########################################################################################################
 
 class TrafficState(Enum):
@@ -68,9 +70,9 @@ class TrafficSignal:
         else:
             return PHASE_1
     
-    def calculate_green_time(self, cars):
-        # Linear Regression: 
-        return 2 * cars + 7
+    def calculate_green_time(self):
+        # Linear Regression: y = 1.47x + 8.43
+        return (1.47 * detections) + 8.43
 
     def run(self, cycles=5):
         for _ in range(cycles):

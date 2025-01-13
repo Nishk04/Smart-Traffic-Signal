@@ -8,6 +8,7 @@ class DetectCars:
         self.cap = cv2.VideoCapture(0)
         self.frame_count = 0
         self.save_path = "Images"  # Directory to save frames
+        self.detections = 0  # Initialize detection count
 
         # Create the directory if it doesn't exist
         if not os.path.exists(self.save_path):
@@ -39,10 +40,12 @@ class DetectCars:
             contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
             # Draw a green rectangle around the red objects
+            self.detections = 0  # Reset detection count for each frame
             for contour in contours:
                 if cv2.contourArea(contour) > 500:  # Filter small contours
                     x, y, w, h = cv2.boundingRect(contour)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    self.detections += 1  # Increment detection count
 
             # Save the frame with the green rectangles to disk
             frame_filename = os.path.join(self.save_path, f"frame_{self.frame_count}.jpg")
@@ -52,11 +55,15 @@ class DetectCars:
             self.frame_count += 1
 
             # Break the loop after saving a few frames for demonstration
-            if self.frame_count >= 4:
+            if self.frame_count >= 10:
                 break
 
         self.cap.release()
 
+    def get_detections(self):
+        return self.detections
+
 # Run the detection
 detector = DetectCars()
 detector.run()
+print(f"Number of detections: {detector.get_detections()}")

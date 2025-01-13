@@ -1,5 +1,6 @@
 import time
 from enum import Enum
+import DetectCars as dc
 
 # Setup GPIO Pins
 SIGNAL_1 = {'RED': 2, 'YELLOW': 3, 'GREEN': 4}
@@ -12,6 +13,8 @@ PEDESTRIAN_BUTTON = 11
 ALL_SIGNALS = [SIGNAL_1, SIGNAL_2, SIGNAL_3, SIGNAL_4]
 PHASE_1 = [SIGNAL_1, SIGNAL_3]
 PHASE_2 = [SIGNAL_2, SIGNAL_4]
+
+detections = dc.get_detections()
 
 class TrafficState(Enum):
     RED = 1
@@ -61,8 +64,8 @@ class TrafficSignal:
         else:
             return PHASE_1
     
-    def calculate_green_time(self, cars):
-        return 2 * cars + 7
+    def calculate_green_time(self):
+        return (1.47 * detections) + 8.43
 
     def run(self, cycles=5):
         for _ in range(cycles):
