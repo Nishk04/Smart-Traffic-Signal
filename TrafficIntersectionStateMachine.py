@@ -12,11 +12,13 @@ PEDESTRIAN_BUZZER = 10
 PEDESTRIAN_BUTTON = 11
 
 ALL_SIGNALS = [SIGNAL_1, SIGNAL_2, SIGNAL_3, SIGNAL_4]
+PHASE_1 = [SIGNAL_1, SIGNAL_3]
+PHASE_2 = [SIGNAL_2, SIGNAL_4]
 
 GPIO.setmode(GPIO.BCM)
 
 # Setup pins for lights and buzzer
-for signal in ALL_SIGNALS:
+for signal in PHASE_1 and PHASE_2:
     GPIO.setup(list(signal.values()), GPIO.OUT) # Setup all pins in the signal group
 GPIO.setup(PEDESTRIAN_BUZZER, GPIO.OUT)
 GPIO.setup(PEDESTRIAN_BUTTON, GPIO.IN)
@@ -34,7 +36,8 @@ class TrafficSignal:
         self.state = TrafficState.RED
         self.green_time = 10  # Default green light duration
         self.pedestrian_request = False
-        self.current_signal = ALL_SIGNALS[0]  # Active signal group
+        self.current_phase_signal = PHASE_1  # Active signal group
+        
 
     def activate_pedestrian_request(self):
         if(GPIO.input(PEDESTRIAN_BUTTON)):
@@ -57,11 +60,13 @@ class TrafficSignal:
             self.state = TrafficState.RED
             self.pedestrian_request = False  # Reset pedestrian request
         #To-Do: Method to go to next signal in the list + figure out which phase to use for the intersection
-        self.current_signal = self.get_next_signal(self.current_signal) # Go to next signal 
+        self.current_phase_signal = self.get_next_signal(self.current_phase_signal) # Go to next signal 
     
     def get_next_signal(self, cur_signal):
-        cur_index = ALL_SIGNALS.index(cur_signal)
-        return ALL_SIGNALS[cur_index+1]
+        if cur_signal == PHASE_1:
+            return PHASE_2
+        else:
+            return PHASE_1
     
     def calculate_green_time(self, cars):
         # Linear Regression: 
@@ -93,11 +98,15 @@ class TrafficSignal:
 
         # Turn on appropriate light by getting specific pin from the current signal
         if current_light == "RED":
-            GPIO.output(self.current_signal['RED'], GPIO.HIGH)
+            #GPIO.output(self.current_signal['RED'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[0]['RED'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[1]['RED'], GPIO.HIGH)
         elif current_light == "YELLOW":
-            GPIO.output(self.current_signal['YELLOW'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[0]['YELLOW'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[1]['YELLOW'], GPIO.HIGH)
         elif current_light == "GREEN":
-            GPIO.output(self.current_signal['GREEN'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[0]['GREEN'], GPIO.HIGH)
+            GPIO.output(self.current_phase_signal[1]['GREEN'], GPIO.HIGH)
         elif current_light == "PEDESTRIAN":
             GPIO.output(PEDESTRIAN_BUZZER, GPIO.HIGH)  # Activate buzzer
 
@@ -107,7 +116,7 @@ class TrafficSignal:
 @atexit.register
 def cleanup_gpio():
     #Turn off all lights and buzzer
-    GPIO.output([pin for signal in ALL_SIGNALS for pin in signal.values()], GPIO.LOW)
+    GPIO.output([pin for signal in PHASE_1 and PHASE_2 for pin in signal.values()], GPIO.LOW)
     GPIO.output(PEDESTRIAN_BUZZER, GPIO.LOW)
     GPIO.cleanup()
 
