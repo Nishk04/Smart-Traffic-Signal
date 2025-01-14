@@ -22,8 +22,9 @@ class DetectCars:
                 print("Failed to capture frame. Exiting...")
                 break
 
+            rgbFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             # Convert the frame to HSV color space
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            hsv = cv2.cvtColor(rgbFrame, cv2.COLOR_BGR2HSV)
 
             # Define the lower and upper bounds for the red color
             lower_red1 = np.array([0, 120, 70])  # First range for red (hue 0-10)
@@ -55,7 +56,7 @@ class DetectCars:
             self.frame_count += 1
 
             # Break the loop after saving a few frames for demonstration
-            if self.frame_count >= 10:
+            if self.frame_count >= 1:
                 break
 
         self.cap.release()

@@ -24,7 +24,6 @@ for signal in PHASE_1 and PHASE_2:
 GPIO.setup(PEDESTRIAN_BUZZER, GPIO.OUT)
 GPIO.setup(PEDESTRIAN_BUTTON, GPIO.IN)
 
-detections = dc.get_detections()
 #########################################################################################################
 
 class TrafficState(Enum):
@@ -72,6 +71,7 @@ class TrafficSignal:
     
     def calculate_green_time(self):
         # Linear Regression: y = 1.47x + 8.43
+        detections = dc.get_detections()
         return (1.47 * detections) + 8.43
 
     def run(self, cycles=5):
@@ -95,12 +95,12 @@ class TrafficSignal:
 
     def control_lights(self, current_light):
         # Turn off all lights in the current signal first
-        GPIO.output(list(self.current_signal.values()), GPIO.LOW)
+        GPIO.output(list(self.current_phase_signal[0].values()), GPIO.LOW)
+        GPIO.output(list(self.current_phase_signal[1].values()), GPIO.LOW)
         GPIO.output(PEDESTRIAN_BUZZER, GPIO.LOW)  # Turn off buzzer
 
         # Turn on appropriate light by getting specific pin from the current signal
         if current_light == "RED":
-            #GPIO.output(self.current_signal['RED'], GPIO.HIGH)
             GPIO.output(self.current_phase_signal[0]['RED'], GPIO.HIGH)
             GPIO.output(self.current_phase_signal[1]['RED'], GPIO.HIGH)
         elif current_light == "YELLOW":
