@@ -14,7 +14,7 @@ ALL_SIGNALS = [SIGNAL_1, SIGNAL_2, SIGNAL_3, SIGNAL_4]
 PHASE_1 = [SIGNAL_1, SIGNAL_3]
 PHASE_2 = [SIGNAL_2, SIGNAL_4]
 
-detections = dc.get_detections()
+# DETECTIONS = dc.detector.get_detections()
 
 class TrafficState(Enum):
     RED = 1
@@ -29,6 +29,7 @@ class TrafficSignal:
         self.pedestrian_request = False
         self.current_phase_signal = PHASE_1  # Active signal group
         self.start_time = None
+        self.detections = dc.detector.get_detections()
 
     def start_timer(self):
         self.start_time = time.time()
@@ -48,7 +49,7 @@ class TrafficSignal:
                 self.state = TrafficState.PEDESTRIAN
             else:
                 self.state = TrafficState.GREEN
-                self.green_time = self.calculate_green_time(cars)
+                self.green_time = self.calculate_green_time()
         elif self.state == TrafficState.GREEN:
             self.state = TrafficState.YELLOW
         elif self.state == TrafficState.YELLOW:
@@ -65,7 +66,9 @@ class TrafficSignal:
             return PHASE_1
     
     def calculate_green_time(self):
-        return (1.47 * detections) + 8.43
+        if self.detections is None:
+            self.detections = 0
+        return (1.47 * self.detections) + 8.43
 
     def run(self, cycles=5):
         for _ in range(cycles):
@@ -104,5 +107,5 @@ class TrafficSignal:
 
 # Run the program here
 signal = TrafficSignal()
-signal.activate_pedestrian_request()
+#signal.activate_pedestrian_request()
 signal.run()

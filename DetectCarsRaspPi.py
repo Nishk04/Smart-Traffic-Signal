@@ -47,7 +47,6 @@ class DetectCarsRaspPi:
         
         # Show the live feed
         cv2.imshow("Original Frame", rgbFrame)
-        cv2.imshow("Red Mask", red_mask)
 
         # Wait for the 'q' key to be pressed to close the window
         while True:

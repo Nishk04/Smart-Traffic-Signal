@@ -14,7 +14,7 @@ class DetectCars:
         if not os.path.exists(self.save_path):
             os.makedirs(self.save_path)
 
-    def run(self):
+    def detect(self):
         while True:
             # Read the video frame
             ret, frame = self.cap.read()
@@ -43,7 +43,7 @@ class DetectCars:
             # Draw a green rectangle around the red objects
             self.detections = 0  # Reset detection count for each frame
             for contour in contours:
-                if cv2.contourArea(contour) > 500:  # Filter small contours
+                if cv2.contourArea(contour) > 400:  # Filter small contours
                     x, y, w, h = cv2.boundingRect(contour)
                     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                     self.detections += 1  # Increment detection count
@@ -66,5 +66,5 @@ class DetectCars:
 
 # Run the detection
 detector = DetectCars()
-detector.run()
+detector.detect()
 print(f"Number of detections: {detector.get_detections()}")

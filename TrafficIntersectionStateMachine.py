@@ -2,7 +2,7 @@ from enum import Enum
 import time
 import RPi.GPIO as GPIO
 import atexit
-import DetectCarsRaspPi as dc
+import CarDetection as dc
 
 # Setup GPIO Pins
 SIGNAL_1 = {'RED': 2, 'YELLOW': 3, 'GREEN': 4}
@@ -38,8 +38,8 @@ class TrafficSignal:
         self.green_time = 10  # Default green light duration
         self.pedestrian_request = False
         self.current_phase_signal = PHASE_1  # Active signal group
-        
-
+        #self.detections = dc.detector.detect()
+        self.detections = dc.detections
     def activate_pedestrian_request(self):
         if(GPIO.input(PEDESTRIAN_BUTTON)):
             self.pedestrian_request = True
@@ -71,7 +71,6 @@ class TrafficSignal:
     
     def calculate_green_time(self):
         # Linear Regression: y = 1.47x + 8.43
-        detections = dc.get_detections()
         return (1.47 * detections) + 8.43
 
     def run(self, cycles=5):
@@ -125,4 +124,3 @@ def cleanup_gpio():
 # Run the program here
 signal = TrafficSignal()
 signal.run()
-
