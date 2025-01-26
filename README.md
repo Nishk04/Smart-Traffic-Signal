@@ -12,4 +12,12 @@ I broke down the creation of this signal into these steps:
 4. Create cardboard model intersection
 5. Plan Rasp Pi wiring
 
+# Step 1: Creating the State Machine
+I decided to use 4 different states: red light, yellow light, green light, and pedestrian signal. The transitions is Red --> Green --> Yellow --> Red (typical cycle) unless the pedestrian signal interrupts this flow. 
+
+The timings for the red and yellow state was by default 5 seconds while the pedestrian signal was 20 seconds. As for the green light, it is based on the number of cars in each lane. We will go over this in step 3.  
+
+# Step 2: Detecting Model Cars
+
+
 
