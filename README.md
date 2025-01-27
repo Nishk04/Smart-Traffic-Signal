@@ -88,9 +88,8 @@ The Raspberry Pi handles signal control, including:
 sudo apt update
 sudo apt install python3-libraryName
 ```
----
 
-## Challenges and Improvements
+---
 
 ### Challenges
 1. **Car Detection Accuracy**  
@@ -108,17 +107,14 @@ sudo apt install python3-libraryName
    - Opted for OpenCV to detect red cars instead of training a custom neural network which caused there to be less model pieces like pedestrians as paper clips
 to be used for the project.
 
-### Improvements
+### Future Improvements
 1. **Detection Algorithm**  
-   - Improved by converting images to HSV color space and refining masks for red detection.  
+   - Detect pedestrians as paper clips and other colored rectangles as different cars. 
 
-2. **Intersection Model**  
-   - Transitioned to a compact, 12x12-inch board for easier car detection, camera placement and wiring.  
+2. **Linear Regression Model for Pedestrians**  
+   - Based on pedestrian detection, I could have made the time for the pedestrian signal longer if my model detects someone with a disability that may need more time to walk. I could have done the same for different types of cars by labeling them with a certain color of paper to add more complexity to the project.
 
-3. **Linear Regression Implementation**  
-   - Used dummy data to optimize green light timing based on traffic flow, minimizing intersection congestion.  
-
-4. **Pedestrian Signal Integration**  
+3. **Pedestrian Signal Integration**  
    - Added a pedestrian signal with a button and buzzer for user interaction, despite time constraints.
 
 ---
